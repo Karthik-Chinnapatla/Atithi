@@ -1,0 +1,431 @@
+{
+  "info": {
+    "name": "Atithi (అతిథి) - Restaurant Rating & Review Platform API",
+    "_postman_id": "9f6b47e2-3f9b-41fa-9e63-7d5c1c9f4b10",
+    "description": "Complete Postman collection covering Authentication (with 6-digit Email OTP verification), Restaurants, Reviews, Restaurant Owner, and Administrator endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "csrfToken", "value": "" },
+    { "key": "restaurantId", "value": "" },
+    { "key": "reviewId", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "ownerId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Get CSRF Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.csrfToken) pm.collectionVariables.set('csrfToken', json.csrfToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/csrf-token"
+          }
+        },
+        {
+          "name": "Register Customer (Sends 6-Digit Email OTP)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Karthikeya Rao\",\n  \"email\": \"karthik@example.com\",\n  \"password\": \"Customer@1234\",\n  \"confirmPassword\": \"Customer@1234\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/register"
+          }
+        },
+        {
+          "name": "Verify Registration Email OTP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.csrfToken) pm.collectionVariables.set('csrfToken', json.csrfToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"karthik@example.com\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/verify-otp"
+          }
+        },
+        {
+          "name": "Resend Registration Email OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"karthik@example.com\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/resend-otp"
+          }
+        },
+        {
+          "name": "Login (Customer / Owner / Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.csrfToken) pm.collectionVariables.set('csrfToken', json.csrfToken);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer1@atithi.com\",\n  \"password\": \"Customer@1234\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Get Current User (/me)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/me"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+            ],
+            "url": "{{baseUrl}}/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Restaurants",
+      "item": [
+        {
+          "name": "List Restaurants (Search & Filters)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.restaurants && json.restaurants.length > 0) {",
+                  "  pm.collectionVariables.set('restaurantId', json.restaurants[0]._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/restaurants?search=&location=all&cuisine=all&sort=popular&page=1&limit=9"
+          }
+        },
+        {
+          "name": "Get Filter Options",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/restaurants/filters"
+          }
+        },
+        {
+          "name": "Get Restaurant By ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/restaurants/{{restaurantId}}"
+          }
+        },
+        {
+          "name": "Create Restaurant (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Terra Bistro\",\n  \"description\": \"Seasonal wood-hearth plates crafted with local farm produce and fresh flatbreads.\",\n  \"location\": \"Banjara Hills, Hyderabad\",\n  \"address\": \"Road No. 12, Banjara Hills, Hyderabad, Telangana 500034\",\n  \"cuisine\": [\"Continental\", \"Wood-Fired\"],\n  \"image\": \"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80\",\n  \"phone\": \"+91 40 2335 0180\",\n  \"priceRange\": \"$$$\"\n}"
+            },
+            "url": "{{baseUrl}}/restaurants"
+          }
+        },
+        {
+          "name": "Update Restaurant (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"priceRange\": \"$$\",\n  \"phone\": \"+91 40 2335 0181\"\n}"
+            },
+            "url": "{{baseUrl}}/restaurants/{{restaurantId}}"
+          }
+        },
+        {
+          "name": "Delete Restaurant (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+            ],
+            "url": "{{baseUrl}}/restaurants/{{restaurantId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Submit Review (Customer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.review && json.review._id) {",
+                  "  pm.collectionVariables.set('reviewId', json.review._id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurant\": \"{{restaurantId}}\",\n  \"rating\": 5,\n  \"comment\": \"Warm hospitality and remarkable handmade pasta.\"\n}"
+            },
+            "url": "{{baseUrl}}/reviews"
+          }
+        },
+        {
+          "name": "Get Restaurant Reviews",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reviews/restaurant/{{restaurantId}}?page=1&limit=8"
+          }
+        },
+        {
+          "name": "Get My Reviews (Customer)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reviews/my-reviews"
+          }
+        },
+        {
+          "name": "Update Review (Customer Owner)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4,\n  \"comment\": \"Updated review comment after second dining visit.\"\n}"
+            },
+            "url": "{{baseUrl}}/reviews/{{reviewId}}"
+          }
+        },
+        {
+          "name": "Delete Review (Customer Owner or Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+            ],
+            "url": "{{baseUrl}}/reviews/{{reviewId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Restaurant Owner",
+      "item": [
+        {
+          "name": "Owner Dashboard",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/owner/dashboard"
+          }
+        },
+        {
+          "name": "Owner Assigned Restaurant",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/owner/restaurant"
+          }
+        },
+        {
+          "name": "Update Permitted Restaurant Info",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated seasonal kitchen description with Nizami specials.\",\n  \"phone\": \"+91 40 2335 0149\"\n}"
+            },
+            "url": "{{baseUrl}}/owner/restaurant"
+          }
+        },
+        {
+          "name": "Get Owner Restaurant Reviews",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/owner/reviews?page=1&limit=10"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Administrator",
+      "item": [
+        {
+          "name": "Admin Dashboard Overview",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/dashboard"
+          }
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/users?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Toggle User Active Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": true\n}"
+            },
+            "url": "{{baseUrl}}/admin/users/{{userId}}/status"
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/users/{{userId}}"
+          }
+        },
+        {
+          "name": "List Admin Restaurants",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/restaurants?page=1&limit=10"
+          }
+        },
+        {
+          "name": "List Admin Reviews",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/reviews?page=1&limit=10"
+          }
+        },
+        {
+          "name": "Delete Review (Admin Moderation)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/reviews/{{reviewId}}"
+          }
+        },
+        {
+          "name": "Create Restaurant Owner",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Kavya Reddy\",\n  \"email\": \"kavya.owner@atithi.com\",\n  \"password\": \"Owner@1234\",\n  \"restaurantId\": \"{{restaurantId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/admin/owners"
+          }
+        },
+        {
+          "name": "Assign Owner to Restaurant",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ownerId\": \"{{ownerId}}\"\n}"
+            },
+            "url": "{{baseUrl}}/admin/restaurants/{{restaurantId}}/assign-owner"
+          }
+        }
+      ]
+    }
+  ]
+}
