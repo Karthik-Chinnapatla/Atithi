@@ -1,4 +1,4 @@
-# Atithi (అతిథి) — Hyderabad Restaurant Rating & Review Platform (MERN Stack)
+# Atithi — Hyderabad Restaurant Rating & Review Platform (MERN Stack)
 
 A full-stack, production-grade **Restaurant Rating & Review Platform** built with MongoDB, Express.js, React, and Node.js. It provides curated Hyderabad restaurant discovery, email OTP verified customer registration, live MongoDB-aggregated ratings and distributions, Light & Dark theme support, strict backend role-based access control (`ADMIN`, `CUSTOMER`, `RESTAURANT_OWNER`), secure HttpOnly cookie JWT + CSRF authentication, and polished responsive dashboards.
 
